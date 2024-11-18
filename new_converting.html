@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Multiple GeoTIFF Files</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.1/dist/leaflet.css" />
+    <style>
+        #map { width: 100%; height: 500px; }
+    </style>
+</head>
+<body>
+    <h2>Upload Multiple GeoTIFF Files</h2>
+    <input type="file" id="tiffFiles" accept=".tiff,.tif" multiple>
+    <button onclick="uploadTIFFs()">Upload and Convert</button>
+
+    <h3>Base64 Image Data:</h3>
+    <textarea id="base64Output" rows="10" cols="100" readonly></textarea>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.1/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([12.932, 75.722], 16); // Set an initial center point
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
+
+        function uploadTIFFs() {
+            var files = document.getElementById('tiffFiles').files;
+            if (files.length === 0) { alert('Please select TIFF files.'); return; }
+            
+            // Iterate through all selected files
+            Array.from(files).forEach(file => {
+                var formData = new FormData();
+                formData.append("file", file);
+
+                fetch('http://127.0.0.1:8000/convert-tiff', { method: 'POST', body: formData })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Display the Base64 image data in the textarea
+                        document.getElementById('base64Output').value += data.base64_image + "\n\n"; // Append each Base64
+
+                        // Create image overlay on the map using the TIFF bounds
+                        var base64Image = data.base64_image;
+                        var bounds = data.bounds;
+
+                        // Use imageOverlay to display the base64 image over the bounds
+                        var imageOverlay = L.imageOverlay(base64Image, bounds).addTo(map);
+                        
+                        // Optionally, add a marker or a popup with the file name or info
+                        imageOverlay.bindPopup(file.name).openPopup();
+                    })
+                    .catch(console.error);
+            });
+        }
+    </script>
+</body>
+</html>
