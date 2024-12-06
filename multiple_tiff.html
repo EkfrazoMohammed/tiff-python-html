@@ -1,0 +1,95 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Multiple GeoTIFF Files</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.1/dist/leaflet.css" />
+    <style>
+        #map {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Upload Multiple GeoTIFF Files</h2>
+    <input type="file" id="tiffFiles" accept=".tiff,.tif" multiple>
+    <button onclick="uploadTIFFs()">Upload and Convert</button>
+    <div id="map"></div>
+    <div id="checkboxContainer">
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.1/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([12.932, 75.722], 16);
+        var satelliteLayer = L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            {
+                attribution: 'Tiles © Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            }
+        ).addTo(map);
+        var overlays = [];
+        var currentIndex = 0;
+        function uploadTIFFs() {
+            var files = document.getElementById('tiffFiles').files;
+            if (files.length === 0) { alert('Please select TIFF files.'); return; }
+
+            Array.from(files).forEach((file) => {
+                var formData = new FormData();
+                formData.append("file", file);
+                fetch('http://127.0.0.1:8000/tiff_converter/', { method: 'POST', body: formData })
+                    .then(response => response.json())
+                    .then(data => {
+                        var base64Image = data.base64_image;
+                        var bounds = data.bounds;
+                        var imageOverlay = L.imageOverlay(base64Image, bounds).addTo(map);
+                        overlays.push({ overlay: imageOverlay, fileName: file.name });
+                        var checkboxLabel = document.createElement('label');
+                        checkboxLabel.innerHTML = `<input type="checkbox" id="checkbox${currentIndex}" checked onclick="toggleOverlay(${currentIndex})"> Show ${file.name}`;
+                        document.getElementById('checkboxContainer').appendChild(checkboxLabel);
+                        currentIndex++;
+                    })
+                    .catch(console.error);
+            });
+        }
+        function toggleOverlay(index) {
+            var overlay = overlays[index];
+            var checkbox = document.getElementById(`checkbox${index}`);
+            if (checkbox.checked) {
+                overlay.overlay.addTo(map);
+            } else {
+                map.removeLayer(overlay.overlay);
+            }
+        }
+    </script>
+</body>
+
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Multiple GeoTIFF Files</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.1/dist/leaflet.css" />
+    <style>
+        #map {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Upload Multiple GeoTIFF Files</h2> <input type="file" id="tiffFiles" accept=".tiff,.tif" multiple> <button
+        onclick="uploadTIFFs()">Upload and Convert</button>
+    <div id="map"></div>
+    <div id="checkboxContainer"> </div>
+    <script src="https://unpkg.com/leaflet@1.9.1/dist/leaflet.js"></script>
+    <script> var map = L.map('map').setView([12.932, 75.722], 16); var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles © Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community' }).addTo(map); var overlays = []; var currentIndex = 0; function uploadTIFFs() { var files = document.getElementById('tiffFiles').files; if (files.length === 0) { alert('Please select TIFF files.'); return; } Array.from(files).forEach((file) => { var formData = new FormData(); formData.append("file", file); fetch('http://127.0.0.1:8000/tiff_converter/', { method: 'POST', body: formData }).then(response => response.json()).then(data => { var base64Image = data.base64_image; var bounds = data.bounds; var imageOverlay = L.imageOverlay(base64Image, bounds).addTo(map); overlays.push({ overlay: imageOverlay, fileName: file.name }); var checkboxLabel = document.createElement('label'); checkboxLabel.innerHTML = `<input type="checkbox" id="checkbox${currentIndex}" checked onclick="toggleOverlay(${currentIndex})"> Show ${file.name}`; document.getElementById('checkboxContainer').appendChild(checkboxLabel); currentIndex++; }).catch(console.error); }); } function toggleOverlay(index) { var overlay = overlays[index]; var checkbox = document.getElementById(`checkbox${index}`); if (checkbox.checked) { overlay.overlay.addTo(map); } else { map.removeLayer(overlay.overlay); } } </script>
+</body>
+
+</html>
